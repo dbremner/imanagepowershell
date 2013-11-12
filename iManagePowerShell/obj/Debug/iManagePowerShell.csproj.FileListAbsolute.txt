@@ -1,0 +1,8 @@
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\bin\Debug\iManagePowerShell.dll
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\bin\Debug\iManagePowerShell.pdb
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\bin\Debug\Interop.IManage.dll
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\obj\Debug\ResolveAssemblyReference.cache
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\obj\Debug\Interop.IManage.dll
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\obj\Debug\iManagePowerShell.csproj.ResolveComReference.cache
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\obj\Debug\iManagePowerShell.dll
+c:\users\ccl\documents\visual studio 2010\Projects\iManagePowerShell\iManagePowerShell\obj\Debug\iManagePowerShell.pdb
