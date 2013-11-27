@@ -45,7 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cmdlets.cs" />
+    <Compile Include="Cmdlets.iManDocument.cs" />
+    <Compile Include="Cmdlets.iManFolder.cs" />
+    <Compile Include="Cmdlets.iManServer.cs" />
+    <Compile Include="Cmdlets.iManUser.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Objects.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -60,6 +63,16 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Cmdlets.iManDatabase.cs" />
+    <None Include="iManagePowerShell.format.ps1xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="iManagePowerShell.psd1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
