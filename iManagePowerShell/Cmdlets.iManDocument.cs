@@ -169,6 +169,10 @@ namespace iManagePowerShell
                                 }
                             }
                         }
+                        else
+                        {
+                            WriteWarning(String.Format("Database {0} on server {1} does not have a SQL Configuration.", d.Name, d.me.Session.ServerName));
+                        }
                     }
                     break;
             }

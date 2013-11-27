@@ -15,7 +15,7 @@ namespace iManagePowerShell
         public string Database { get; set; }
 
         [Parameter(Mandatory = true, ParameterSetName = "ServerAndDatabase")]
-        [Parameter(Mandatory = true, ParameterSetName = "Database")]
+        [Parameter(ParameterSetName = "Database")]
         public string Server { get; set; }
 
         [Parameter(Mandatory = false, ParameterSetName = "Server")]
