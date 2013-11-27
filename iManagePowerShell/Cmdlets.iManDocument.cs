@@ -180,7 +180,7 @@ namespace iManagePowerShell
     public class Export_iManDocument : PSCmdlet
     {
 
-        [Parameter]
+        [Parameter(Position = 0)]
         public string DestinationPath { get; set; }
 
         [Parameter(Mandatory = true, ValueFromPipeline = true)]

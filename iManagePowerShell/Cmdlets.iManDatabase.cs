@@ -10,16 +10,20 @@ namespace iManagePowerShell
     [Cmdlet(VerbsCommon.Get, "iManDatabase")]
     public class Get_iManDatabase : PSCmdlet
     {
-        [Parameter(Position = 0, Mandatory = false)]
+        [Parameter(Position = 0, Mandatory = true, ParameterSetName = "Server")]
+        [Parameter(Position = 0, Mandatory = true, ParameterSetName = "ServerAndDatabase")]
         public string Database { get; set; }
 
-        [Parameter(Position = 1, Mandatory = false)]
+        [Parameter(Mandatory = true, ParameterSetName = "ServerAndDatabase")]
+        [Parameter(Mandatory = true, ParameterSetName = "Database")]
         public string Server { get; set; }
 
-        [Parameter(Position = 2, Mandatory = false)]
+        [Parameter(Mandatory = false, ParameterSetName = "Server")]
+        [Parameter(Mandatory = false, ParameterSetName = "ServerAndDatabase")]
         public string Username { get; set; }
 
-        [Parameter(Position = 3, Mandatory = false)]
+        [Parameter(Mandatory = false, ParameterSetName = "Server")]
+        [Parameter(Mandatory = false, ParameterSetName = "ServerAndDatabase")]
         public string Password { get; set; }
 
         protected override void BeginProcessing()
