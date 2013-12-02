@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Management.Automation;
-using iml = IManage;
+using iManageWrapper;
 
 namespace iManagePowerShell
 {
@@ -28,15 +28,7 @@ namespace iManagePowerShell
                 {
                     foreach (var u in Username)
                     {
-                        try
-                        {
-                            WriteObject(d.me.SearchUsers(u, iml.imSearchAttributeType.imSearchExactMatch, true).ToList(d), true);
-                        }
-                        catch (System.Runtime.InteropServices.COMException e)
-                        {
-                            if (e.ErrorCode != -2147211972)
-                                throw e;
-                        }
+                        WriteObject(d.SearchUsersByUsername(u), true);
                     }
                 }
 
@@ -44,7 +36,7 @@ namespace iManagePowerShell
                 {
                     foreach (var f in Fullname)
                     {
-                        WriteObject(d.me.SearchUsers(f, iml.imSearchAttributeType.imSearchFullName, true).ToList(d), true);
+                        WriteObject(d.SearchUsersByFullname(f), true);
                     }
                 }
             }

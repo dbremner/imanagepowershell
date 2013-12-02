@@ -5,14 +5,15 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("iManagePowerShell")]
+[assembly: AssemblyTitle("iManageWrapper")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Trenam Kemker")]
-[assembly: AssemblyProduct("iManagePowerShell")]
+[assembly: AssemblyProduct("iManageWrapper")]
 [assembly: AssemblyCopyright("Copyright © Trenam Kemker 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -20,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("a1c4b551-aee0-422a-92c8-5856688120fc")]
+[assembly: Guid("c606ec91-e55f-49b6-bac5-56eed97ab860")]
 
 // Version information for an assembly consists of the following four values:
 //

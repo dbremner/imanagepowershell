@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Management.Automation;
 using System.Data.SqlClient;
-using iml = IManage;
+using iManageWrapper;
 
 namespace iManagePowerShell
 {
@@ -41,12 +41,12 @@ namespace iManagePowerShell
         [Parameter(ParameterSetName = "FromWorkspace")]
         public string Name { get; set; }
 
-        [Parameter(ParameterSetName = "FromDatabase")]
-        [Parameter(ParameterSetName = "FromWorkspace")]
+        [Parameter(Position = 0, ParameterSetName = "FromDatabase")]
+        [Parameter(Position = 0, ParameterSetName = "FromWorkspace")]
         public string Number { get; set; }
 
-        [Parameter(ParameterSetName = "FromDatabase")]
-        [Parameter(ParameterSetName = "FromWorkspace")]
+        [Parameter(Position = 1, ParameterSetName = "FromDatabase")]
+        [Parameter(Position = 1, ParameterSetName = "FromWorkspace")]
         public string Version { get; set; }
 
         [Parameter(ParameterSetName = "FromDatabase")]
@@ -77,50 +77,24 @@ namespace iManagePowerShell
                 case "FromWorkspace":
                     foreach (var w in Workspace)
                     {
-                        iml.IManProfileSearchParameters psp = w.Database.me.Session.DMS.CreateProfileSearchParameters();
-                        if (Name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, Name); }
-                        if (Number != null) { psp.Add(iml.imProfileAttributeID.imProfileDocNum, Number); }
-                        if (Version != null) { psp.Add(iml.imProfileAttributeID.imProfileVersion, Version); }
-                        if (Author != null) { psp.Add(iml.imProfileAttributeID.imProfileAuthor, Author); }
-                        if (CreatedBy != null) { psp.Add(iml.imProfileAttributeID.imProfileOperator, CreatedBy); }
-                        if (Client != null) { psp.Add(w.Database.ClientCustomField, Client); }
-                        if (Matter != null) { psp.Add(w.Database.MatterCustomField, Matter); }
-                        if (Fulltext != null) { psp.AddFullTextSearch(Fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
-
-                        // this line is the only difference between FromWorkspace and FromDatabase
-                        psp.Add(iml.imProfileAttributeID.imProfileContainerID, w.me.FolderID.ToString());
-
-                        WriteObject(w.me.Database.SearchDocuments(psp, true).ToDocumentList(w.Database), true);
+                        WriteObject(w.SearchDocuments(Name, Number, Version, Author, CreatedBy, Client, Matter, Fulltext), true);
                     }
                     break;
 
                 case "FromDatabase":
                     foreach (var d in Database)
                     {
-                        iml.IManProfileSearchParameters psp = d.me.Session.DMS.CreateProfileSearchParameters();
-                        if (Name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, Name); }
-                        if (Number != null) { psp.Add(iml.imProfileAttributeID.imProfileDocNum, Number); }
-                        if (Version != null) { psp.Add(iml.imProfileAttributeID.imProfileVersion, Version); }
-                        if (Author != null) { psp.Add(iml.imProfileAttributeID.imProfileAuthor, Author); }
-                        if (CreatedBy != null) { psp.Add(iml.imProfileAttributeID.imProfileOperator, CreatedBy); }
-                        if (Client != null) { psp.Add(d.ClientCustomField, Client); }
-                        if (Matter != null) { psp.Add(d.MatterCustomField, Matter); }
-                        if (Fulltext != null) { psp.AddFullTextSearch(Fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
-
-                        if (psp.Count > 0)
-                            WriteObject(d.me.SearchDocuments(psp, true).ToDocumentList(d), true);
-                        else
-                            throw new ApplicationException("No search criteria specified.");
+                        WriteObject(d.SearchDocuments( Name,  Number,  Version,  Author,  CreatedBy,  Client,  Matter,  Fulltext), true);
                     }
                     break;
 
                 case "FromDatabaseSQL":
 
                     if (DocNumColumnName != null && DocNumColumnNumber != null)
-                        throw new Exception("DocNumColumnName and DocNumColumnNumber can not both be specified at the same time.");
+                        throw new ApplicationException("DocNumColumnName and DocNumColumnNumber can not both be specified at the same time.");
 
                     if (VersionColumnName != null && VersionColumnNumber != null)
-                        throw new Exception("VersionColumnName and VersionColumnNumber can not both be specified at the same time.");
+                        throw new ApplicationException("VersionColumnName and VersionColumnNumber can not both be specified at the same time.");
 
                     foreach (var d in Database)
                     {
@@ -156,7 +130,7 @@ namespace iManagePowerShell
                                                 }
                                                 catch (FormatException e)
                                                 {
-                                                    WriteWarning(string.Format("Could not parse document number {0} or version number {1}.", r[DocNumColumnOrdinal].ToString(), r[VersionColumnOrdinal].ToString()));
+                                                    WriteWarning(string.Format("Could not parse document number {0} or version number {1}. Error was \"{2}\".", r[DocNumColumnOrdinal].ToString(), r[VersionColumnOrdinal].ToString(), e.Message));
                                                 }
                                             }
                                             while (r.Read());
@@ -171,7 +145,7 @@ namespace iManagePowerShell
                         }
                         else
                         {
-                            WriteWarning(String.Format("Database {0} on server {1} does not have a SQL Configuration.", d.Name, d.me.Session.ServerName));
+                            WriteWarning(String.Format("Database {0} on server {1} does not have a SQL Configuration.", d.Name, d.ServerName));
                         }
                     }
                     break;

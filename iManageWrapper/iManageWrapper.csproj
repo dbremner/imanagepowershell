@@ -5,14 +5,13 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1CBC3FFC-41AE-462B-AC46-E91E6A57D67A}</ProjectGuid>
+    <ProjectGuid>{293CA634-3A81-452D-959A-24720B8D0F00}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>iManagePowerShell</RootNamespace>
-    <AssemblyName>iManagePowerShell</AssemblyName>
+    <RootNamespace>iManageWrapper</RootNamespace>
+    <AssemblyName>iManageWrapper</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,39 +33,33 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\..\Program Files\Reference Assemblies\Microsoft\WindowsPowerShell\v1.0\System.Management.Automation.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cmdlets.iManDocument.cs" />
-    <Compile Include="Cmdlets.iManFolder.cs" />
-    <Compile Include="Cmdlets.iManServer.cs" />
-    <Compile Include="Cmdlets.iManUser.cs" />
+    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="iManDatabase.cs" />
+    <Compile Include="iManDocument.cs" />
+    <Compile Include="iManDocumentHistory.cs" />
+    <Compile Include="iManFolder.cs" />
+    <Compile Include="iManServer.cs" />
+    <Compile Include="iManSession.cs" />
+    <Compile Include="iManWorkspace.cs" />
+    <Compile Include="iManUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Cmdlets.iManDatabase.cs" />
-    <None Include="ClassDiagram1.cd" />
-    <None Include="iManagePowerShell.format.ps1xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="iManagePowerShell.psd1">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\iManageWrapper\iManageWrapper.csproj">
-      <Project>{293CA634-3A81-452D-959A-24720B8D0F00}</Project>
-      <Name>iManageWrapper</Name>
-    </ProjectReference>
+    <COMReference Include="IManage">
+      <Guid>{CF424CA8-866F-45BF-BE09-A239048A3DBD}</Guid>
+      <VersionMajor>8</VersionMajor>
+      <VersionMinor>5</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

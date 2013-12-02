@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Management.Automation;
-using iml = IManage;
+using iManageWrapper;
 
 namespace iManagePowerShell
 {
@@ -28,8 +28,8 @@ namespace iManagePowerShell
 
         protected override void ProcessRecord()
         {
-            if (ParentFolder != null) foreach (var f in ParentFolder) { ((iml.IManDocumentFolders)f.me.SubFolders).AddNewDocumentFolderInheriting(Name, Description); }
-            if (ParentWorkspace != null) foreach (var f in ParentWorkspace) { ((iml.IManDocumentFolders)f.me.SubFolders).AddNewDocumentFolderInheriting(Name, Description); }
+            if (ParentFolder != null) foreach (var f in ParentFolder) { WriteObject(f.AddNewDocumentFolderInheriting(Name, Description)); }
+            if (ParentWorkspace != null) foreach (var f in ParentWorkspace) { WriteObject(f.AddNewDocumentFolderInheriting(Name, Description)); }
         }
 
     }
@@ -38,39 +38,36 @@ namespace iManagePowerShell
     public class Get_iManWorkspace : PSCmdlet
     {
 
-        [Parameter(Mandatory = true, ValueFromPipeline = true)]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "GetAll")]
+        [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "Search")]
         [ValidateNotNullOrEmpty]
         public iManDatabase[] Database { get; set; }
 
-        [Parameter]
+        [Parameter(Mandatory = true, ParameterSetName = "GetAll")]
+        public SwitchParameter GetAll;
+
+        [Parameter(ParameterSetName = "Search")]
         public string Description { get; set; }
 
-        [Parameter]
+        [Parameter(ParameterSetName = "Search")]
         public string Name { get; set; }
 
-        [Parameter]
+        [Parameter(ParameterSetName = "Search")]
         public string Owner { get; set; }
 
-        [Parameter]
+        [Parameter(ParameterSetName = "Search")]
         public string Client { get; set; }
 
-        [Parameter]
+        [Parameter(ParameterSetName = "Search")]
         public string Matter { get; set; }
 
         protected override void ProcessRecord()
         {
+            if (ParameterSetName == "Search" && null == (Description ?? Name ?? Owner ?? Client ?? Matter))
+                throw new ApplicationException(@"At least one search parameter must be specified. If you want all Workspaces then use the -GetAll switch.");
             foreach (var d in Database)
             {
-                iml.IManWorkspaceSearchParameters wssp = d.me.Session.DMS.CreateWorkspaceSearchParameters();
-                if (Description != null) { wssp.Add(iml.imFolderAttributeID.imFolderDescription, Description); }
-                if (Name != null) { wssp.Add(iml.imFolderAttributeID.imFolderName, Name); }
-                if (Owner != null) { wssp.Add(iml.imFolderAttributeID.imFolderOwner, Owner); }
-
-                iml.IManProfileSearchParameters psp = d.me.Session.DMS.CreateProfileSearchParameters();
-                if (Client != null) { psp.Add(d.ClientCustomField, Client); }
-                if (Matter != null) { psp.Add(d.MatterCustomField, Matter); }
-
-                WriteObject(d.SearchWorkspaces(wssp, psp), true);
+                WriteObject(d.SearchWorkspaces(Description, Name, Owner, Client, Matter), true);
             }
         }
     }
@@ -86,15 +83,19 @@ namespace iManagePowerShell
         [ValidateNotNullOrEmpty]
         public iManWorkspace[] Workspace { get; set; }
 
-        [Parameter]
+        [Parameter(Position = 0)]
         public string DestinationPath { get; set; }
 
         protected override void ProcessRecord()
         {
-            if (Folder == null) Folder = Workspace.Select(s => new iManFolder(s.me, s.Database)).ToArray();
-            string basepath = (DestinationPath == null) ? this.SessionState.Path.CurrentFileSystemLocation.Path : System.IO.Path.GetFullPath(DestinationPath);
-            foreach (iManFolder f in Folder)
-                DoExport(f, basepath);
+            if (Folder == null) Folder = Workspace.Select(w => (iManFolder)w).ToArray();
+            string basepath = (DestinationPath != null) ? System.IO.Path.GetFullPath(DestinationPath) : this.SessionState.Path.CurrentFileSystemLocation.Path;
+
+            var FolderCount = Folder.Count();
+            for (int i = 0; i < FolderCount; i++ )
+            {
+                DoExport(Folder[i], basepath);
+            }
         }
 
         private void DoExport(iManFolder Folder, string Destination)
@@ -120,16 +121,11 @@ namespace iManagePowerShell
         [ValidateNotNullOrEmpty]
         public iManFolder Folder { get; set; }
 
-        [Parameter]
-        public bool InheritSecurity = true;
-
         protected override void ProcessRecord()
         {
-            iml.IManDocuments df = (iml.IManDocuments)Folder.me.Contents;
             foreach (var d in Document)
             {
-                df.AddDocumentReference(d.me);
-                if (InheritSecurity) { d.me.Refile(d.me.Profile, Folder.me.Security); }
+                Folder.AddDocumentReference(d);
             }
         }
 

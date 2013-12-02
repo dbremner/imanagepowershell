@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Management.Automation;
-using iml = IManage;
+using iManageWrapper;
 
 namespace iManagePowerShell
 {
