@@ -10,27 +10,33 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
+// ReSharper disable once InconsistentNaming
     public class iManDocumentHistory
     {
-        internal iml.IManDocumentHistory me;
+        internal readonly iml.IManDocumentHistory Me;
         public iManDatabase Database;
 
-        public iManDocumentHistory(iml.IManDocumentHistory DocumentHistory, iManDatabase Database)
+        public iManDocumentHistory(iml.IManDocumentHistory documentHistory, iManDatabase database)
         {
-            this.me = DocumentHistory;
-            this.Database = Database;
+            Me = documentHistory;
+            Database = database;
         }
 
-        public string Application { get { return me.Application; } }
-        public string Comment { get { return me.Comment; } }
-        public DateTime Date { get { return me.Date; } }
-        public int Duration { get { return me.Duration; } }
-        public string Location { get { return me.Location; } }
-        public string Number { get { return me.Number; } }
-        public string Operation { get { return me.Operation; } }
-        public int PagesPrinted { get { return me.PagesPrinted; } }
-        public string User { get { return me.User; } }
-        public string Version { get { return me.Version; } }
+        public string Application { get { return Me.Application; } }
+        public string Comment { get { return Me.Comment; } }
+        public DateTime Date { get { return Me.Date; } }
+        public int Duration { get { return Me.Duration; } }
+        public string Location { get { return Me.Location; } }
+        public string Number { get { return Me.Number; } }
+        public string Operation { get { return Me.Operation; } }
+        public int PagesPrinted { get { return Me.PagesPrinted; } }
+        public string User { get { return Me.User; } }
+        public string Version { get { return Me.Version; } }
+
+        public override string ToString()
+        {
+            return string.Format("{0} by {1} @ {2} using {3} on {4}", Operation, User, Date, Application, Location);
+        }
 
     }
 

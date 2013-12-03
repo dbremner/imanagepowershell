@@ -1,21 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Management.Automation;
 using System.Data.SqlClient;
+using iManagePowerShell.Annotations;
 using iManageWrapper;
 
 namespace iManagePowerShell
 {
     [Cmdlet(VerbsCommon.Get, "iManDocument")]
+// ReSharper disable once InconsistentNaming
     public class Get_iManDocument : PSCmdlet
     {
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "FromDatabase")]
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "FromDatabaseSQL")]
         [ValidateNotNullOrEmpty]
-        public iManDatabase[] Database { get; set; }
+        public iManDatabase[] Database { get; [UsedImplicitly] set; }
 
         [Parameter(Mandatory = true, ValueFromPipeline = true, ParameterSetName = "FromWorkspace")]
         [ValidateNotNullOrEmpty]
@@ -36,6 +39,9 @@ namespace iManagePowerShell
 
         [Parameter(ParameterSetName = "FromDatabaseSQL")]
         public int? VersionColumnNumber { get; set; }
+
+        [Parameter(ParameterSetName = "FromDatabaseSQL")]
+        public SwitchParameter ContinueOnParseError;
 
         [Parameter(ParameterSetName = "FromDatabase")]
         [Parameter(ParameterSetName = "FromWorkspace")]
@@ -72,7 +78,7 @@ namespace iManagePowerShell
         protected override void ProcessRecord()
         {
 
-            switch (this.ParameterSetName)
+            switch (ParameterSetName)
             {
                 case "FromWorkspace":
                     foreach (var w in Workspace)
@@ -102,23 +108,39 @@ namespace iManagePowerShell
                         {
                             foreach (var s in SqlQuery)
                             {
-                                SqlDataReader r = d.ExecuteSql(s);
+                                var r = d.ExecuteSql(s);
                                 try
                                 {
                                     DocNumColumnName = DocNumColumnName ?? "docnum";
-                                    int DocNumColumnOrdinal = DocNumColumnNumber ?? r.GetOrdinal(DocNumColumnName);
+                                    int docNumColumnOrdinal;
+                                    try
+                                    {
+                                        docNumColumnOrdinal = DocNumColumnNumber ?? r.GetOrdinal(DocNumColumnName);
+                                    }
+                                    catch (IndexOutOfRangeException e)
+                                    {
+                                        throw new IndexOutOfRangeException("A column called docnum was not found in the result set. Modify the query or use the DocNumColumnName or DocNumColumnNumber parameter to specify a different column.", e);
+                                    }
 
                                     VersionColumnName = VersionColumnName ?? "Version";
-                                    int VersionColumnOrdinal = VersionColumnNumber ?? r.GetOrdinal(VersionColumnName);
+                                    int versionColumnOrdinal;
+                                    try
+                                    {
+                                        versionColumnOrdinal = VersionColumnNumber ?? r.GetOrdinal(VersionColumnName);
+                                    }
+                                    catch (IndexOutOfRangeException e)
+                                    {
+                                        throw new IndexOutOfRangeException("A column called Version was not found in the result set. Modify the query or use the VersionColumnName or VersionColumnNumber parameter to specify a different column.", e);
+                                    }
 
                                     // one row must be read to be able to know the data types of the columns
                                     if (r.Read())
                                     {
                                         // performance optimization for when docnum and version are of the type native to the iManage database
-                                        if (r[DocNumColumnOrdinal].GetType() == typeof(System.Double) && r[VersionColumnOrdinal].GetType() == typeof(System.Int32))
+                                        if (r[docNumColumnOrdinal] is double && r[versionColumnOrdinal] is int)
                                             do
                                             {
-                                                WriteObject(d.GetDocument(Convert.ToInt32((double)r[DocNumColumnOrdinal]), (int)r[VersionColumnOrdinal]));
+                                                WriteObject(d.GetDocument(Convert.ToInt32((double)r[docNumColumnOrdinal]), (int)r[versionColumnOrdinal]));
                                             }
                                             while (r.Read());
                                         else
@@ -126,11 +148,14 @@ namespace iManagePowerShell
                                             {
                                                 try
                                                 {
-                                                    WriteObject(d.GetDocument(Int32.Parse(r[DocNumColumnOrdinal].ToString()), Int32.Parse(r[VersionColumnOrdinal].ToString())));
+                                                    WriteObject(d.GetDocument(Int32.Parse(r[docNumColumnOrdinal].ToString()), Int32.Parse(r[versionColumnOrdinal].ToString())));
                                                 }
                                                 catch (FormatException e)
                                                 {
-                                                    WriteWarning(string.Format("Could not parse document number {0} or version number {1}. Error was \"{2}\".", r[DocNumColumnOrdinal].ToString(), r[VersionColumnOrdinal].ToString(), e.Message));
+                                                    if (ContinueOnParseError)
+                                                        WriteWarning(string.Format("Could not parse document number {0} or version number {1}. Error was \"{2}\".", r[docNumColumnOrdinal], r[versionColumnOrdinal], e.Message));
+                                                    else
+                                                        throw new ApplicationException(string.Format("Could not parse document number {0} or version number {1}. Error was \"{2}\".", r[docNumColumnOrdinal], r[versionColumnOrdinal], e.Message));
                                                 }
                                             }
                                             while (r.Read());
@@ -155,6 +180,7 @@ namespace iManagePowerShell
     }
 
     [Cmdlet(VerbsData.Export, "iManDocument")]
+// ReSharper disable once InconsistentNaming
     public class Export_iManDocument : PSCmdlet
     {
 
@@ -169,11 +195,11 @@ namespace iManagePowerShell
         {
             foreach (var d in Document)
             {
-                string filename = string.Format("{0}_{1}.{2}", d.Number, d.Version, d.Extension);
+                var filename = string.Format("{0}_{1}.{2}", d.Number, d.Version, d.Extension);
                 if (DestinationPath == null)
-                    d.GetCopy(System.IO.Path.Combine(this.SessionState.Path.CurrentFileSystemLocation.Path, filename));
+                    d.GetCopy(Path.Combine(SessionState.Path.CurrentFileSystemLocation.Path, filename));
                 else
-                    d.GetCopy(System.IO.Path.Combine(System.IO.Path.GetFullPath(DestinationPath), filename));
+                    d.GetCopy(Path.Combine(Path.GetFullPath(DestinationPath), filename));
             }
         }
 

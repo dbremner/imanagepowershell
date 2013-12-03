@@ -49,11 +49,11 @@
     <Compile Include="Cmdlets.iManFolder.cs" />
     <Compile Include="Cmdlets.iManServer.cs" />
     <Compile Include="Cmdlets.iManUser.cs" />
+    <Compile Include="Properties\Annotations.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Cmdlets.iManDatabase.cs" />
-    <None Include="ClassDiagram1.cd" />
     <None Include="iManagePowerShell.format.ps1xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>

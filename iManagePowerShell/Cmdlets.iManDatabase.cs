@@ -8,6 +8,7 @@ using iManageWrapper;
 namespace iManagePowerShell
 {
     [Cmdlet(VerbsCommon.Get, "iManDatabase")]
+// ReSharper disable once InconsistentNaming
     public class Get_iManDatabase : PSCmdlet
     {
         [Parameter(Position = 0, Mandatory = true, ParameterSetName = "Server")]
@@ -29,6 +30,7 @@ namespace iManagePowerShell
         protected override void BeginProcessing()
         {
             List<iManServer> servers;
+// ReSharper disable once ConvertIfStatementToConditionalTernaryExpression
             if (Server == null)
             {
                 servers = iManServer.AutoConnect();

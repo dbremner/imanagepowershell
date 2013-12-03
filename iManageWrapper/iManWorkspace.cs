@@ -10,27 +10,28 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
+// ReSharper disable once InconsistentNaming
     public class iManWorkspace
     {
-        internal iml.IManWorkspace me;
+        internal readonly iml.IManWorkspace Me;
         public iManDatabase Database { get; private set; }
 
-        public iManWorkspace(iml.IManWorkspace workspace, iManDatabase Database)
+        public iManWorkspace(iml.IManWorkspace workspace, iManDatabase database)
         {
-            me = workspace;
-            this.Database = Database;
+            Me = workspace;
+            Database = database;
         }
 
         static public implicit operator iManFolder(iManWorkspace w)
         {
-            return new iManFolder((iml.IManFolder)w.me, w.Database);
+            return new iManFolder(w.Me, w.Database);
         }
 
         public List<iManFolder> SubFolders
         {
             get
             {
-                return me.SubFolders.ToList(Database);
+                return Me.SubFolders.ToList(Database);
             }
         }
 
@@ -39,33 +40,33 @@ namespace iManageWrapper
             SubFolders.ForEach(f => f.Refile());
         }
 
-        public string Name { get { return me.Name; } set { me.Name = value; } }
+        public string Name { get { return Me.Name; } set { Me.Name = value; } }
 
-        public string Description { get { return me.Description; } set { me.Description = value; } }
+        public string Description { get { return Me.Description; } set { Me.Description = value; } }
 
-        public void Update() { me.Update(); }
+        public void Update() { Me.Update(); }
 
-        public iManFolder AddNewDocumentFolderInheriting(string Name, string Description)
+        public iManFolder AddNewDocumentFolderInheriting(string name, string description)
         {
-            return new iManFolder(((iml.IManDocumentFolders)me.SubFolders).AddNewDocumentFolderInheriting(Name, Description), Database);
+            return new iManFolder(((iml.IManDocumentFolders)Me.SubFolders).AddNewDocumentFolderInheriting(name, description), Database);
         }
 
-        public List<iManDocument> SearchDocuments(string Name, string Number, string Version, string Author, string CreatedBy, string Client, string Matter, string Fulltext)
+        public List<iManDocument> SearchDocuments(string name, string number, string version, string author, string createdBy, string client, string matter, string fulltext)
         {
-            var psp = Database.me.Session.DMS.CreateProfileSearchParameters();
-            if (Name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, Name); }
-            if (Number != null) { psp.Add(iml.imProfileAttributeID.imProfileDocNum, Number); }
-            if (Version != null) { psp.Add(iml.imProfileAttributeID.imProfileVersion, Version); }
-            if (Author != null) { psp.Add(iml.imProfileAttributeID.imProfileAuthor, Author); }
-            if (CreatedBy != null) { psp.Add(iml.imProfileAttributeID.imProfileOperator, CreatedBy); }
-            if (Client != null) { psp.Add(Database.ClientCustomField, Client); }
-            if (Matter != null) { psp.Add(Database.MatterCustomField, Matter); }
-            if (Fulltext != null) { psp.AddFullTextSearch(Fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
+            var psp = Database.Me.Session.DMS.CreateProfileSearchParameters();
+            if (name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, name); }
+            if (number != null) { psp.Add(iml.imProfileAttributeID.imProfileDocNum, number); }
+            if (version != null) { psp.Add(iml.imProfileAttributeID.imProfileVersion, version); }
+            if (author != null) { psp.Add(iml.imProfileAttributeID.imProfileAuthor, author); }
+            if (createdBy != null) { psp.Add(iml.imProfileAttributeID.imProfileOperator, createdBy); }
+            if (client != null) { psp.Add(Database.ClientCustomField, client); }
+            if (matter != null) { psp.Add(Database.MatterCustomField, matter); }
+            if (fulltext != null) { psp.AddFullTextSearch(fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
 
             // this line is the only difference between FromWorkspace and FromDatabase
-            psp.Add(iml.imProfileAttributeID.imProfileContainerID, me.FolderID.ToString());
+            psp.Add(iml.imProfileAttributeID.imProfileContainerID, Me.FolderID.ToString());
 
-            return me.Database.SearchDocuments(psp, true).ToDocumentList(Database);
+            return Me.Database.SearchDocuments(psp, true).ToDocumentList(Database);
         }
 
     }

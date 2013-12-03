@@ -8,6 +8,7 @@ using iManageWrapper;
 namespace iManagePowerShell
 {
     [Cmdlet(VerbsCommon.Get, "iManUser")]
+// ReSharper disable once InconsistentNaming
     public class Get_iManUser : PSCmdlet
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true)]

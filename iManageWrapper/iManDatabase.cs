@@ -1,165 +1,222 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
 using System.Data.SqlClient;
+using System.Runtime.InteropServices;
 using iml = IManage;
 
 namespace iManageWrapper
 {
-
+// ReSharper disable once InconsistentNaming
     public class iManDatabase
     {
-        internal iml.IManDatabase me;
+        private SqlConnection _sqlServer;
+        internal iml.IManDatabase Me;
 
-        private SqlConnection SqlServer;
-        public bool SqlEnabled { get { return (SqlServer != null); } }
-
-        public void ConnectToSql(string ConnectionString)
+        public iManDatabase(iml.IManDatabase database, int clientCustomFieldPosition = 1,
+            int matterCustomFieldPosition = 2)
         {
-            try
+            Me = database;
+            ClientCustomFieldPosition = clientCustomFieldPosition;
+            MatterCustomFieldPosition = matterCustomFieldPosition;
+        }
+
+        public bool SqlEnabled
+        {
+            get { return (_sqlServer != null); }
+        }
+
+        internal iml.imProfileAttributeID ClientCustomField { get; set; }
+
+        public int ClientCustomFieldPosition
+        {
+            get { return Convert.ToInt32(ClientCustomField.ToString().Replace("imProfileCustom", "")); }
+            set
             {
-                SqlServer = new SqlConnection(ConnectionString);
-                SqlServer.Open();
-            }
-            catch
-            {
-                SqlServer = null;
+                ClientCustomField =
+                    (iml.imProfileAttributeID) Enum.Parse(typeof (iml.imProfileAttributeID), "imProfileCustom" + value);
             }
         }
 
-        public void ConnectToSql(string Server, string Database, string Username = null, string Password = null)
+        internal iml.imProfileAttributeID MatterCustomField { get; set; }
+
+        public int MatterCustomFieldPosition
+        {
+            get { return Convert.ToInt32(MatterCustomField.ToString().Replace("imProfileCustom", "")); }
+            set
+            {
+                MatterCustomField =
+                    (iml.imProfileAttributeID) Enum.Parse(typeof (iml.imProfileAttributeID), "imProfileCustom" + value);
+            }
+        }
+
+        public string Name
+        {
+            get { return Me.Name; }
+        }
+
+        public string ServerName
+        {
+            get { return Me.Session.ServerName; }
+        }
+
+        public List<iManDocument> CheckedOutDocuments
+        {
+            get { return Me.CheckedOutList.ToDocumentList(this); }
+        }
+
+        public void ConnectToSql(string connectionString)
+        {
+            if (connectionString == null) throw new ArgumentNullException("connectionString");
+            try
+            {
+                _sqlServer = new SqlConnection(connectionString);
+                _sqlServer.Open();
+            }
+            catch
+            {
+                _sqlServer = null;
+            }
+        }
+
+        public void ConnectToSql(string server, string database, string username = null, string password = null)
         {
             try
             {
-                SqlConnectionStringBuilder con = new SqlConnectionStringBuilder();
-                con.DataSource = Server;
-                con.InitialCatalog = Database;
-                if (Username == null)
+                var con = new SqlConnectionStringBuilder {DataSource = server, InitialCatalog = database};
+
+                if (username == null)
                 {
                     con.IntegratedSecurity = true;
                 }
                 else
                 {
                     con.IntegratedSecurity = false;
-                    con.UserID = Username;
-                    if (Password != null) { con.Password = Password; }
+                    con.UserID = username;
+                    if (password != null)
+                    {
+                        con.Password = password;
+                    }
                 }
 
-                SqlServer = new SqlConnection(con.ToString());
-                SqlServer.Open();
+                _sqlServer = new SqlConnection(con.ToString());
+                _sqlServer.Open();
             }
             catch
             {
-                SqlServer = null;
+                _sqlServer = null;
+                throw;
             }
-
         }
 
-        public SqlDataReader ExecuteSql(string Query)
+        public SqlDataReader ExecuteSql(string query)
         {
-            if (!SqlEnabled) throw new Exception("SQL Server not configured. Call ConnectToSql() on the iManDatabase object to configure a connection.");
-            SqlCommand QueryCommand = new SqlCommand(Query, SqlServer);
-            return QueryCommand.ExecuteReader();
+            if (!SqlEnabled)
+                throw new ApplicationException(
+                    "SQL Server not configured. Call ConnectToSql() on the iManDatabase object to configure a connection.");
+            var queryCommand = new SqlCommand(query, _sqlServer);
+            return queryCommand.ExecuteReader();
         }
 
-        public iml.imProfileAttributeID ClientCustomField
+        public List<iManDocument> SearchDocuments(string name, string number, string version, string author,
+            string createdBy, string client, string matter, string fulltext)
         {
-            get;
-            set;
-        }
-        public void SetClientCustomField(int ClientCustomFieldPosition)
-        {
-            this.ClientCustomField = (iml.imProfileAttributeID)Enum.Parse(typeof(iml.imProfileAttributeID), "imProfileCustom" + ClientCustomFieldPosition);
-        }
-
-        public iml.imProfileAttributeID MatterCustomField
-        {
-            get;
-            set;
-        }
-        public void SetMatterCustomField(int MatterCustomFieldPosition)
-        {
-            this.MatterCustomField = (iml.imProfileAttributeID)Enum.Parse(typeof(iml.imProfileAttributeID), "imProfileCustom" + MatterCustomFieldPosition);
-        }
-
-        public iManDatabase(iml.IManDatabase database, int ClientCustomFieldPosition = 1, int MatterCustomFieldPosition = 2)
-        {
-            me = database;
-            SetClientCustomField(ClientCustomFieldPosition);
-            SetMatterCustomField(MatterCustomFieldPosition);
-        }
-
-        public string Name { get { return me.Name; } }
-
-        public string ServerName { get { return me.Session.ServerName; } }
-
-        public List<iManDocument> SearchDocuments(string Name, string Number, string Version, string Author, string CreatedBy, string Client, string Matter, string Fulltext)
-        {
-            var psp = me.Session.DMS.CreateProfileSearchParameters();
-            if (Name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, Name); }
-            if (Number != null) { psp.Add(iml.imProfileAttributeID.imProfileDocNum, Number); }
-            if (Version != null) { psp.Add(iml.imProfileAttributeID.imProfileVersion, Version); }
-            if (Author != null) { psp.Add(iml.imProfileAttributeID.imProfileAuthor, Author); }
-            if (CreatedBy != null) { psp.Add(iml.imProfileAttributeID.imProfileOperator, CreatedBy); }
-            if (Client != null) { psp.Add(ClientCustomField, Client); }
-            if (Matter != null) { psp.Add(MatterCustomField, Matter); }
-            if (Fulltext != null) { psp.AddFullTextSearch(Fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
+            var psp = Me.Session.DMS.CreateProfileSearchParameters();
+            if (name != null)
+            {
+                psp.Add(iml.imProfileAttributeID.imProfileName, name);
+            }
+            if (number != null)
+            {
+                psp.Add(iml.imProfileAttributeID.imProfileDocNum, number);
+            }
+            if (version != null)
+            {
+                psp.Add(iml.imProfileAttributeID.imProfileVersion, version);
+            }
+            if (author != null)
+            {
+                psp.Add(iml.imProfileAttributeID.imProfileAuthor, author);
+            }
+            if (createdBy != null)
+            {
+                psp.Add(iml.imProfileAttributeID.imProfileOperator, createdBy);
+            }
+            if (client != null)
+            {
+                psp.Add(ClientCustomField, client);
+            }
+            if (matter != null)
+            {
+                psp.Add(MatterCustomField, matter);
+            }
+            if (fulltext != null)
+            {
+                psp.AddFullTextSearch(fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere);
+            }
 
             if (psp.Count > 0)
-                return me.SearchDocuments(psp, true).ToDocumentList(this);
-            else
-                throw new ApplicationException("No search criteria specified.");
+                return Me.SearchDocuments(psp, true).ToDocumentList(this);
+            throw new ApplicationException("No search criteria specified.");
         }
 
-        public iManDocument GetDocument(int DocumentNumber, int DocumentVersion)
+        public iManDocument GetDocument(int documentNumber, int documentVersion)
         {
-            return new iManDocument(me.GetDocument(DocumentNumber, DocumentVersion), this);
+            return new iManDocument(Me.GetDocument(documentNumber, documentVersion), this);
         }
 
-        public List<iManDocument> CheckedOutDocuments { get { return me.CheckedOutList.ToDocumentList(this); } }
-
-        public List<iManUser> SearchUsersByUsername(string Username)
+        public List<iManUser> SearchUsersByUsername(string username)
         {
-            List<iManUser> result = new List<iManUser>();
+            var result = new List<iManUser>();
             try
             {
-                result = me.SearchUsers(Username, iml.imSearchAttributeType.imSearchExactMatch, true).ToList(this);
+                result = Me.SearchUsers(username, iml.imSearchAttributeType.imSearchExactMatch, true).ToList(this);
             }
-            catch (System.Runtime.InteropServices.COMException e)
+            catch (COMException e)
             {
                 if (e.ErrorCode != -2147211972)
-                    throw e;
+                    throw;
             }
             return result;
         }
 
-        public List<iManUser> SearchUsersByFullname(string Fullname)
+        public List<iManUser> SearchUsersByFullname(string fullname)
         {
-            return me.SearchUsers(Fullname, iml.imSearchAttributeType.imSearchFullName, true).ToList(this);
+            return Me.SearchUsers(fullname, iml.imSearchAttributeType.imSearchFullName, true).ToList(this);
         }
 
-        public List<iManWorkspace> SearchWorkspaces(string Description, string Name, string Owner, string Client, string Matter)
+        public List<iManWorkspace> SearchWorkspaces(string description, string name, string owner, string client,
+            string matter)
         {
-            var wssp = me.Session.DMS.CreateWorkspaceSearchParameters();
-            if (Description != null) { wssp.Add(iml.imFolderAttributeID.imFolderDescription, Description); }
-            if (Name != null) { wssp.Add(iml.imFolderAttributeID.imFolderName, Name); }
-            if (Owner != null) { wssp.Add(iml.imFolderAttributeID.imFolderOwner, Owner); }
+            var wssp = Me.Session.DMS.CreateWorkspaceSearchParameters();
+            if (description != null)
+            {
+                wssp.Add(iml.imFolderAttributeID.imFolderDescription, description);
+            }
+            if (name != null)
+            {
+                wssp.Add(iml.imFolderAttributeID.imFolderName, name);
+            }
+            if (owner != null)
+            {
+                wssp.Add(iml.imFolderAttributeID.imFolderOwner, owner);
+            }
 
-            var psp = me.Session.DMS.CreateProfileSearchParameters();
-            if (Client != null) { psp.Add(ClientCustomField, Client); }
-            if (Matter != null) { psp.Add(MatterCustomField, Matter); }
+            var psp = Me.Session.DMS.CreateProfileSearchParameters();
+            if (client != null)
+            {
+                psp.Add(ClientCustomField, client);
+            }
+            if (matter != null)
+            {
+                psp.Add(MatterCustomField, matter);
+            }
 
-            return me.SearchWorkspaces(psp, wssp).ToWorkspaceList(this);
+            return Me.SearchWorkspaces(psp, wssp).ToWorkspaceList(this);
         }
 
         public override string ToString()
         {
             return Name;
         }
-
     }
-
 }

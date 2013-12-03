@@ -10,25 +10,26 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
+// ReSharper disable once InconsistentNaming
     public class iManSession : IDisposable
     {
-        internal iml.IManSession me;
+        internal readonly iml.IManSession Me;
 
-        public iManSession(iml.IManSession Session)
+        public iManSession(iml.IManSession session)
         {
-            me = Session;
+            Me = session;
         }
 
         public void Dispose()
         {
-            if (me.Connected) me.Logout();
+            if (Me.Connected) Me.Logout();
         }
 
         public List<iManDatabase> Databases
         {
             get
             {
-                return me.Databases.ToList();
+                return Me.Databases.ToList();
             }
         }
 
@@ -36,7 +37,7 @@ namespace iManageWrapper
         {
             get
             {
-                return me.ServerName;
+                return Me.ServerName;
             }
         }
     }

@@ -5,44 +5,46 @@ using System.Text;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
 using System.Data.SqlClient;
+using Microsoft.Win32;
 using iml = IManage;
 
 namespace iManageWrapper
 {
 
+// ReSharper disable once InconsistentNaming
     public class iManServer : IDisposable
     {
-        internal iml.IManDMS me;
+        internal readonly iml.IManDMS Me;
 
-        private static Dictionary<string, iml.IManDMS> ServerSingletons = new Dictionary<string, iml.IManDMS>();
+        private static readonly Dictionary<string, iml.IManDMS> ServerSingletons = new Dictionary<string, iml.IManDMS>();
 
-        public iManServer(string Server, string Username = null, string Password = null)
+        public iManServer(string server, string username = null, string password = null)
         {
-            iml.IManDMS SingletonServer;
-            ServerSingletons.TryGetValue(Server, out SingletonServer);
-            if (SingletonServer == null)
+            iml.IManDMS singletonServer;
+            ServerSingletons.TryGetValue(server, out singletonServer);
+            if (singletonServer == null)
             {
-                me = new iml.ManDMS();
-                ServerSingletons.Add(Server, me);
-                iml.IManSession s = me.Sessions.Add(Server);
-                if (Username == null)
+                Me = new iml.ManDMS();
+                ServerSingletons.Add(server, Me);
+                var s = Me.Sessions.Add(server);
+                if (username == null)
                 {
                     s.TrustedLogin();
                 }
                 else
                 {
-                    s.Login(Username, Password);
+                    s.Login(username, password);
                 }
             }
             else
             {
-                me = SingletonServer;
+                Me = singletonServer;
             }
         }
 
         public void Dispose()
         {
-            foreach (iml.IManSession s in me.Sessions)
+            foreach (iml.IManSession s in Me.Sessions)
             {
                 if (s.Connected)
                 {
@@ -50,25 +52,28 @@ namespace iManageWrapper
                     s.Logout();
                 }
             }
-            me.Close();
+            Me.Close();
         }
 
         public static List<iManServer> AutoConnect()
         {
-            List<iManServer> result = new List<iManServer>();
-            Microsoft.Win32.RegistryKey rk = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Interwoven\WorkSite\8.0\Common\Login\RegisteredServers");
-            foreach (var s in rk.GetSubKeyNames().Select(s => rk.OpenSubKey(s)))
+            var result = new List<iManServer>();
+            var rk = Registry.CurrentUser.OpenSubKey(@"Software\Interwoven\WorkSite\8.0\Common\Login\RegisteredServers");
+
+            if (rk == null) throw new ApplicationException("No iManage Configuration found in registry.");
+
+            foreach (var s in rk.GetSubKeyNames().Select(rk.OpenSubKey))
             {
-                string ServerName = s.GetValue("ServerName").ToString();
+                var serverName = s.GetValue("ServerName").ToString();
                 if (s.GetValue("TrustedLogin").ToString() == "Y")
                 {
-                    result.Add(new iManServer(ServerName));
+                    result.Add(new iManServer(serverName));
                 }
                 else
                 {
-                    string username = s.GetValue("UserId").ToString();
-                    string password = s.GetValue("Password").ToString();
-                    result.Add(new iManServer(ServerName, username, password));
+                    var username = s.GetValue("UserId").ToString();
+                    var password = s.GetValue("Password").ToString();
+                    result.Add(new iManServer(serverName, username, password));
                 }
             }
             return result;
@@ -76,7 +81,7 @@ namespace iManageWrapper
 
         public List<iManSession> Sessions
         {
-            get { return me.Sessions.ToList(); }
+            get { return Me.Sessions.ToList(); }
         }
 
     }

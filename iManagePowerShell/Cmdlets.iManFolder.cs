@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Management.Automation;
@@ -9,6 +10,7 @@ namespace iManagePowerShell
 {
 
     [Cmdlet(VerbsCommon.New, "iManFolder")]
+// ReSharper disable once InconsistentNaming
     public class New_iManDocument : PSCmdlet
     {
         [Parameter(ParameterSetName = "iManFolder", Mandatory = true, ValueFromPipeline = true)]
@@ -35,6 +37,7 @@ namespace iManagePowerShell
     }
 
     [Cmdlet(VerbsCommon.Get, "iManWorkspace")]
+// ReSharper disable once InconsistentNaming
     public class Get_iManWorkspace : PSCmdlet
     {
 
@@ -73,6 +76,7 @@ namespace iManagePowerShell
     }
 
     [Cmdlet(VerbsData.Export, "iManFolder")]
+// ReSharper disable once InconsistentNaming
     public class Export_iManFolder : PSCmdlet
     {
         [Parameter(ParameterSetName = "iManFolder", Mandatory = true, ValueFromPipeline = true)]
@@ -89,28 +93,27 @@ namespace iManagePowerShell
         protected override void ProcessRecord()
         {
             if (Folder == null) Folder = Workspace.Select(w => (iManFolder)w).ToArray();
-            string basepath = (DestinationPath != null) ? System.IO.Path.GetFullPath(DestinationPath) : this.SessionState.Path.CurrentFileSystemLocation.Path;
+            var basepath = (DestinationPath != null) ? Path.GetFullPath(DestinationPath) : SessionState.Path.CurrentFileSystemLocation.Path;
 
-            var FolderCount = Folder.Count();
-            for (int i = 0; i < FolderCount; i++ )
-            {
-                DoExport(Folder[i], basepath);
-            }
+            DoExport(Folder, basepath);
         }
 
-        private void DoExport(iManFolder Folder, string Destination)
+        private static void DoExport(IEnumerable<iManFolder> folders, string destination)
         {
-            string basepath = System.IO.Path.Combine(Destination, Folder.Name.Replace(System.IO.Path.GetInvalidFileNameChars(), "_"));
-            System.IO.Directory.CreateDirectory(basepath);
-            foreach (iManDocument d in Folder.Documents)
-                d.GetCopy(System.IO.Path.Combine(basepath, String.Format("{0}_{1}.{2}", d.Number, d.Version, d.Extension)));
-            foreach (iManFolder f in Folder.Folders)
-                DoExport(f, basepath);
+            foreach (var folder in folders)
+            {
+                var basepath = Path.Combine(destination, folder.Name.Replace(Path.GetInvalidFileNameChars(), "_"));
+                Directory.CreateDirectory(basepath);
+                foreach (var d in folder.Documents)
+                    d.GetCopy(Path.Combine(basepath, String.Format("{0}_{1}.{2}", d.Number, d.Version, d.Extension)));
+                    DoExport(folder.Folders, basepath);
+            }
         }
 
     }
 
     [Cmdlet(VerbsCommon.Add, "ToiManFolder")]
+// ReSharper disable once InconsistentNaming
     public class Add_ToiManFolder : PSCmdlet
     {
         [Parameter(Mandatory = true, ValueFromPipeline = true)]

@@ -10,56 +10,60 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
+// ReSharper disable once InconsistentNaming
     public class iManFolder
     {
-        internal iml.IManFolder me;
+        internal readonly iml.IManFolder Me;
         public iManDatabase Database { get; private set; }
 
-        public iManFolder(iml.IManFolder folder, iManDatabase Database)
+        public iManFolder(iml.IManFolder folder, iManDatabase database)
         {
-            me = folder;
-            this.Database = Database;
+            Me = folder;
+            this.Database = database;
         }
 
-        public string Name { get { return me.Name; } set { me.Name = value; } }
+        public string Name { get { return Me.Name; } set { Me.Name = value; } }
 
         public List<iManDocument> Documents
         {
             get
             {
-                List<iManDocument> results = new List<iManDocument>();
-                foreach (iml.IManContent c in me.Contents)
-                    if (c is iml.IManDocument)
-                        results.Add(new iManDocument((iml.IManDocument)c, Database));
+                var results = new List<iManDocument>();
+                foreach (iml.IManContent c in Me.Contents)
+                {
+                    var document = c as iml.IManDocument;
+                    if (document != null)
+                        results.Add(new iManDocument(document, Database));
+                }
                 return results;
             }
         }
 
-        public List<iManFolder> Folders { get { return me.SubFolders.ToList(Database); } }
+        public List<iManFolder> Folders { get { return Me.SubFolders.ToList(Database); } }
 
         public void Refile()
         {
         }
 
-        public iManFolder AddNewDocumentFolderInheriting(string Name, string Description)
+        public iManFolder AddNewDocumentFolderInheriting(string name, string description)
         {
-            return new iManFolder(((iml.IManDocumentFolders)me.SubFolders).AddNewDocumentFolderInheriting(Name, Description), Database);
+            return new iManFolder(((iml.IManDocumentFolders)Me.SubFolders).AddNewDocumentFolderInheriting(name, description), Database);
         }
 
-        public void AddDocumentReference(iManDocument Document)
+        public void AddDocumentReference(iManDocument document)
         {
-            iml.IManDocuments df = (iml.IManDocuments)me.Contents;
-            df.AddDocumentReference(Document.me);
+            var df = (iml.IManDocuments)Me.Contents;
+            df.AddDocumentReference(document.me);
         }
 
-        public void Update() { me.Update(); }
+        public void Update() { Me.Update(); }
 
         public string FullPath
         {
             get
             {
-                StringBuilder result = new StringBuilder();
-                var Parent = me.Parent;
+                var result = new StringBuilder();
+                var Parent = Me.Parent;
                 while (Parent != null)
                 {
                     result.Insert(0, @"\");
