@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Runtime.Serialization;
@@ -11,15 +12,12 @@ namespace iManageWrapper
 {
 
 // ReSharper disable once InconsistentNaming
-    public class iManWorkspace
+    public class iManWorkspace : iManObjectDatabase
     {
-        internal readonly iml.IManWorkspace Me;
-        public iManDatabase Database { get; private set; }
+        internal new iml.IManWorkspace Me { get { return (iml.IManWorkspace)base.Me; } }
 
-        public iManWorkspace(iml.IManWorkspace workspace, iManDatabase database)
+        public iManWorkspace(iml.IManWorkspace workspace, iManDatabase database) : base(workspace, database)
         {
-            Me = workspace;
-            Database = database;
         }
 
         static public implicit operator iManFolder(iManWorkspace w)
@@ -27,17 +25,19 @@ namespace iManageWrapper
             return new iManFolder(w.Me, w.Database);
         }
 
-        public List<iManFolder> SubFolders
+        public IEnumerable<iManFolder> SubFolders
         {
             get
             {
-                return Me.SubFolders.ToList(Database);
+                foreach (iml.IManFolder f in Me.SubFolders)
+                    yield return new iManFolder(f, Database);
             }
         }
 
         public void Refile()
         {
-            SubFolders.ForEach(f => f.Refile());
+            foreach (var f in SubFolders)
+                f.Refile();
         }
 
         public string Name { get { return Me.Name; } set { Me.Name = value; } }
@@ -51,7 +51,7 @@ namespace iManageWrapper
             return new iManFolder(((iml.IManDocumentFolders)Me.SubFolders).AddNewDocumentFolderInheriting(name, description), Database);
         }
 
-        public List<iManDocument> SearchDocuments(string name, string number, string version, string author, string createdBy, string client, string matter, string fulltext)
+        public IEnumerable<iManDocument> SearchDocuments(string name, string number, string version, string author, string createdBy, string client, string matter, string fulltext)
         {
             var psp = Database.Me.Session.DMS.CreateProfileSearchParameters();
             if (name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, name); }
@@ -64,9 +64,10 @@ namespace iManageWrapper
             if (fulltext != null) { psp.AddFullTextSearch(fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
 
             // this line is the only difference between FromWorkspace and FromDatabase
-            psp.Add(iml.imProfileAttributeID.imProfileContainerID, Me.FolderID.ToString());
+            psp.Add(iml.imProfileAttributeID.imProfileContainerID, Me.FolderID.ToString(CultureInfo.InvariantCulture));
 
-            return Me.Database.SearchDocuments(psp, true).ToDocumentList(Database);
+            foreach (iml.IManDocument d in Me.Database.SearchDocuments(psp, true))
+                yield return new iManDocument(d, Database);
         }
 
     }

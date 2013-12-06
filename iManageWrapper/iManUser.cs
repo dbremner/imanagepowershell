@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
@@ -10,16 +11,13 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
-// ReSharper disable once InconsistentNaming
-    public class iManUser
+    // ReSharper disable once InconsistentNaming
+    public class iManUser : iManObjectDatabase
     {
-        internal readonly iml.IManUser Me;
-        public iManDatabase Database;
+        internal new iml.IManUser Me { get { return (iml.IManUser)base.Me; } }
 
-        public iManUser(iml.IManUser user, iManDatabase database)
+        public iManUser(iml.IManUser user, iManDatabase database) : base(user,database)
         {
-            Me = user;
-            this.Database = database;
         }
 
         public string Custom1 { get { return Me.Custom1; } }
@@ -47,7 +45,19 @@ namespace iManageWrapper
         public string Phone { get { return Me.Phone; } }
         public iManDatabase PreferredDatabase { get { return new iManDatabase(Me.PreferredDatabase); } }
         public string PreferredFileServer { get { return Me.PreferredFileServer; } }
-        public bool Supervisor { get { return Me.Supervisor; } }
+
+        public bool? Supervisor
+        {
+            get
+            {
+                try { return Me.Supervisor; }
+                catch (COMException e)
+                {
+                    if (e.ErrorCode == -2147212778) return null;
+                    throw;
+                }
+            }
+        }
 
     }
 

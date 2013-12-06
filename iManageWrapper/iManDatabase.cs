@@ -6,16 +6,19 @@ using iml = IManage;
 
 namespace iManageWrapper
 {
-// ReSharper disable once InconsistentNaming
-    public class iManDatabase
+    // ReSharper disable once InconsistentNaming
+    public class iManDatabase : iManObject
     {
         private SqlConnection _sqlServer;
-        internal iml.IManDatabase Me;
+
+        internal new iml.IManDatabase Me
+        {
+            get { return (iml.IManDatabase) base.Me; }
+        }
 
         public iManDatabase(iml.IManDatabase database, int clientCustomFieldPosition = 1,
-            int matterCustomFieldPosition = 2)
+            int matterCustomFieldPosition = 2) : base(database)
         {
-            Me = database;
             ClientCustomFieldPosition = clientCustomFieldPosition;
             MatterCustomFieldPosition = matterCustomFieldPosition;
         }
@@ -33,7 +36,7 @@ namespace iManageWrapper
             set
             {
                 ClientCustomField =
-                    (iml.imProfileAttributeID) Enum.Parse(typeof (iml.imProfileAttributeID), "imProfileCustom" + value);
+                    (iml.imProfileAttributeID)Enum.Parse(typeof(iml.imProfileAttributeID), "imProfileCustom" + value);
             }
         }
 
@@ -45,7 +48,7 @@ namespace iManageWrapper
             set
             {
                 MatterCustomField =
-                    (iml.imProfileAttributeID) Enum.Parse(typeof (iml.imProfileAttributeID), "imProfileCustom" + value);
+                    (iml.imProfileAttributeID)Enum.Parse(typeof(iml.imProfileAttributeID), "imProfileCustom" + value);
             }
         }
 
@@ -59,9 +62,13 @@ namespace iManageWrapper
             get { return Me.Session.ServerName; }
         }
 
-        public List<iManDocument> CheckedOutDocuments
+        public IEnumerable<iManDocument> CheckedOutDocuments
         {
-            get { return Me.CheckedOutList.ToDocumentList(this); }
+            get
+            {
+                foreach (iml.IManDocument d in Me.CheckedOutList)
+                    yield return new iManDocument(d, this);
+            }
         }
 
         public void ConnectToSql(string connectionString)
@@ -82,7 +89,7 @@ namespace iManageWrapper
         {
             try
             {
-                var con = new SqlConnectionStringBuilder {DataSource = server, InitialCatalog = database};
+                var con = new SqlConnectionStringBuilder { DataSource = server, InitialCatalog = database };
 
                 if (username == null)
                 {
@@ -117,7 +124,7 @@ namespace iManageWrapper
             return queryCommand.ExecuteReader();
         }
 
-        public List<iManDocument> SearchDocuments(string name, string number, string version, string author,
+        public IEnumerable<iManDocument> SearchDocuments(string name, string number, string version, string author,
             string createdBy, string client, string matter, string fulltext)
         {
             var psp = Me.Session.DMS.CreateProfileSearchParameters();
@@ -154,9 +161,11 @@ namespace iManageWrapper
                 psp.AddFullTextSearch(fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere);
             }
 
-            if (psp.Count > 0)
-                return Me.SearchDocuments(psp, true).ToDocumentList(this);
-            throw new ApplicationException("No search criteria specified.");
+            if (psp.Count == 0)throw new ApplicationException("No search criteria specified.");
+
+            foreach (iml.IManDocument d in Me.SearchDocuments(psp, true))
+                yield return new iManDocument(d, this);
+            
         }
 
         public iManDocument GetDocument(int documentNumber, int documentVersion)
@@ -164,27 +173,30 @@ namespace iManageWrapper
             return new iManDocument(Me.GetDocument(documentNumber, documentVersion), this);
         }
 
-        public List<iManUser> SearchUsersByUsername(string username)
+        public IEnumerable<iManUser> SearchUsersByUsername(string username)
         {
-            var result = new List<iManUser>();
+            iml.IManUsers result = null;
             try
             {
-                result = Me.SearchUsers(username, iml.imSearchAttributeType.imSearchExactMatch, true).ToList(this);
+                result = Me.SearchUsers(username, iml.imSearchAttributeType.imSearchExactMatch, true);
             }
             catch (COMException e)
             {
                 if (e.ErrorCode != -2147211972)
                     throw;
             }
-            return result;
+            if (result == null) yield break;
+            foreach (iml.IManUser u in result)
+                yield return new iManUser(u, this);
         }
 
-        public List<iManUser> SearchUsersByFullname(string fullname)
+        public IEnumerable<iManUser> SearchUsersByFullname(string fullname)
         {
-            return Me.SearchUsers(fullname, iml.imSearchAttributeType.imSearchFullName, true).ToList(this);
+            foreach (iml.IManUser u in Me.SearchUsers(fullname, iml.imSearchAttributeType.imSearchFullName, true))
+                yield return new iManUser(u, this);
         }
 
-        public List<iManWorkspace> SearchWorkspaces(string description, string name, string owner, string client,
+        public IEnumerable<iManWorkspace> SearchWorkspaces(string description, string name, string owner, string client,
             string matter)
         {
             var wssp = Me.Session.DMS.CreateWorkspaceSearchParameters();
@@ -211,12 +223,18 @@ namespace iManageWrapper
                 psp.Add(MatterCustomField, matter);
             }
 
-            return Me.SearchWorkspaces(psp, wssp).ToWorkspaceList(this);
+            foreach (iml.IManWorkspace w in Me.SearchWorkspaces(psp, wssp))
+                yield return new iManWorkspace(w, this);
         }
 
         public override string ToString()
         {
             return Name;
+        }
+
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
         }
     }
 }

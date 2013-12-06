@@ -12,19 +12,19 @@ namespace iManageWrapper
 {
 
 // ReSharper disable once InconsistentNaming
-    public class iManServer : IDisposable
+    public class iManServer : iManObject, IDisposable
     {
-        internal readonly iml.IManDMS Me;
+        internal new iml.IManDMS Me { get { return (iml.IManDMS)base.Me; } }
 
         private static readonly Dictionary<string, iml.IManDMS> ServerSingletons = new Dictionary<string, iml.IManDMS>();
 
         public iManServer(string server, string username = null, string password = null)
+            : base(new iml.ManDMS())
         {
             iml.IManDMS singletonServer;
             ServerSingletons.TryGetValue(server, out singletonServer);
             if (singletonServer == null)
             {
-                Me = new iml.ManDMS();
                 ServerSingletons.Add(server, Me);
                 var s = Me.Sessions.Add(server);
                 if (username == null)
@@ -38,7 +38,7 @@ namespace iManageWrapper
             }
             else
             {
-                Me = singletonServer;
+                base.Me = singletonServer;
             }
         }
 
@@ -55,9 +55,8 @@ namespace iManageWrapper
             Me.Close();
         }
 
-        public static List<iManServer> AutoConnect()
+        public static IEnumerable<iManServer> AutoConnect()
         {
-            var result = new List<iManServer>();
             var rk = Registry.CurrentUser.OpenSubKey(@"Software\Interwoven\WorkSite\8.0\Common\Login\RegisteredServers");
 
             if (rk == null) throw new ApplicationException("No iManage Configuration found in registry.");
@@ -67,21 +66,20 @@ namespace iManageWrapper
                 var serverName = s.GetValue("ServerName").ToString();
                 if (s.GetValue("TrustedLogin").ToString() == "Y")
                 {
-                    result.Add(new iManServer(serverName));
+                    yield return new iManServer(serverName);
                 }
                 else
                 {
                     var username = s.GetValue("UserId").ToString();
                     var password = s.GetValue("Password").ToString();
-                    result.Add(new iManServer(serverName, username, password));
+                    yield return new iManServer(serverName, username, password);
                 }
             }
-            return result;
         }
 
-        public List<iManSession> Sessions
+        public IEnumerable<iManSession> Sessions
         {
-            get { return Me.Sessions.ToList(); }
+            get { foreach (iml.IManSession s in Me.Sessions) { yield return new iManSession(s); } }
         }
 
     }

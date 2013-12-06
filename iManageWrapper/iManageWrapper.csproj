@@ -40,10 +40,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="iManContent.cs" />
+    <Compile Include="iManCustomAttribute.cs" />
     <Compile Include="iManDatabase.cs" />
     <Compile Include="iManDocument.cs" />
+    <Compile Include="iManDocumentClass.cs" />
     <Compile Include="iManDocumentHistory.cs" />
     <Compile Include="iManFolder.cs" />
+    <Compile Include="iManObject.cs" />
+    <Compile Include="iManProfile.cs" />
+    <Compile Include="iManProfiledContent.cs" />
+    <Compile Include="iManSecurity.cs" />
     <Compile Include="iManServer.cs" />
     <Compile Include="iManSession.cs" />
     <Compile Include="iManWorkspace.cs" />
@@ -51,6 +58,15 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <COMReference Include="IMANADMIN">
+      <Guid>{2D38AF13-6C75-11D4-AB0E-00C04F6803D1}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
     <COMReference Include="IManage">
       <Guid>{CF424CA8-866F-45BF-BE09-A239048A3DBD}</Guid>
       <VersionMajor>8</VersionMajor>

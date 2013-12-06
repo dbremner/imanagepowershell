@@ -11,13 +11,12 @@ namespace iManageWrapper
 {
 
 // ReSharper disable once InconsistentNaming
-    public class iManSession : IDisposable
+    public class iManSession : iManObject, IDisposable
     {
-        internal readonly iml.IManSession Me;
+        internal new iml.IManSession Me { get { return (iml.IManSession)base.Me; } }
 
-        public iManSession(iml.IManSession session)
+        public iManSession(iml.IManSession session) : base(session)
         {
-            Me = session;
         }
 
         public void Dispose()
@@ -25,11 +24,12 @@ namespace iManageWrapper
             if (Me.Connected) Me.Logout();
         }
 
-        public List<iManDatabase> Databases
+        public IEnumerable<iManDatabase> Databases
         {
             get
             {
-                return Me.Databases.ToList();
+                foreach (iml.IManDatabase d in Me.Databases)
+                    yield return new iManDatabase(d);
             }
         }
 

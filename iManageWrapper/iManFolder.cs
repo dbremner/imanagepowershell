@@ -11,35 +11,37 @@ namespace iManageWrapper
 {
 
 // ReSharper disable once InconsistentNaming
-    public class iManFolder
+    public class iManFolder : iManObjectDatabase
     {
-        internal readonly iml.IManFolder Me;
-        public iManDatabase Database { get; private set; }
+        internal new iml.IManFolder Me { get { return (iml.IManFolder)base.Me; } }
 
-        public iManFolder(iml.IManFolder folder, iManDatabase database)
+        public iManFolder(iml.IManFolder folder, iManDatabase database) : base(folder,database)
         {
-            Me = folder;
-            this.Database = database;
         }
 
         public string Name { get { return Me.Name; } set { Me.Name = value; } }
 
-        public List<iManDocument> Documents
+        public IEnumerable<iManDocument> Documents
         {
             get
             {
-                var results = new List<iManDocument>();
                 foreach (iml.IManContent c in Me.Contents)
                 {
                     var document = c as iml.IManDocument;
                     if (document != null)
-                        results.Add(new iManDocument(document, Database));
+                        yield return new iManDocument(document, Database);
                 }
-                return results;
             }
         }
 
-        public List<iManFolder> Folders { get { return Me.SubFolders.ToList(Database); } }
+        public IEnumerable<iManFolder> Folders
+        {
+            get
+            {
+                foreach (iml.IManFolder f in Me.SubFolders)
+                    yield return new iManFolder(f, Database);
+            }
+        }
 
         public void Refile()
         {
@@ -53,7 +55,7 @@ namespace iManageWrapper
         public void AddDocumentReference(iManDocument document)
         {
             var df = (iml.IManDocuments)Me.Contents;
-            df.AddDocumentReference(document.me);
+            df.AddDocumentReference(document.Me);
         }
 
         public void Update() { Me.Update(); }
@@ -63,12 +65,12 @@ namespace iManageWrapper
             get
             {
                 var result = new StringBuilder();
-                var Parent = Me.Parent;
-                while (Parent != null)
+                var parent = Me.Parent;
+                while (parent != null)
                 {
                     result.Insert(0, @"\");
-                    result.Insert(0, Parent.Name);
-                    Parent = Parent.Parent;
+                    result.Insert(0, parent.Name);
+                    parent = parent.Parent;
                 }
                 return result.Append(Name).ToString();
             }

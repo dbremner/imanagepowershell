@@ -11,15 +11,12 @@ namespace iManageWrapper
 {
 
 // ReSharper disable once InconsistentNaming
-    public class iManDocumentHistory
+    public class iManDocumentHistory : iManObjectDatabase
     {
-        internal readonly iml.IManDocumentHistory Me;
-        public iManDatabase Database;
+        internal new iml.IManDocumentHistory Me { get { return (iml.IManDocumentHistory)base.Me; } }
 
-        public iManDocumentHistory(iml.IManDocumentHistory documentHistory, iManDatabase database)
+        public iManDocumentHistory(iml.IManDocumentHistory documentHistory, iManDatabase database) : base(documentHistory,database)
         {
-            Me = documentHistory;
-            Database = database;
         }
 
         public string Application { get { return Me.Application; } }
