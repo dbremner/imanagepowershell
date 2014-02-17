@@ -4,7 +4,7 @@ using iml = IManage;
 
 namespace iManageWrapper
 {
-    // ReSharper disable once InconsistentNaming
+
     public class iManDocument : iManProfiledContent
     {
         public iManDocument(iml.IManDocument document, iManDatabase database)
@@ -77,6 +77,7 @@ namespace iManageWrapper
         public iManUser Author
         {
             get { return new iManUser(Me.Author, Database); }
+            set { Me.let_Author(value.Me); }
         }
 
         /// <summary>
@@ -160,7 +161,7 @@ namespace iManageWrapper
             get { return new iManUser(Me.LastUser, Database); }
         }
 
-        public string Name
+        public new string Name
         {
             get { return Me.Name; }
             set { Me.Name = value; }
@@ -194,6 +195,37 @@ namespace iManageWrapper
         }
 
         public long RetentionDays { get { return Me.RetentionDays; } }
+
+        public bool IsRecord
+        {
+            get { return (bool)Me.GetAttributeValueByID(iml.imProfileAttributeID.imProfileFrozen); }
+            set
+            {
+                if (value)
+                {
+                    this.DeclareAsRecord();
+                }
+                else
+                {
+                    this.UnDeclareAsRecord();
+                }
+            }
+        }
+
+        public DateTime? DateDeclaredRecord
+        {
+            get { return (DateTime?)Me.GetAttributeValueByID(iml.imProfileAttributeID.imProfileDeclareDate); }
+        }
+
+        public void DeclareAsRecord()
+        {
+            Me.SetAttributeByID(iml.imProfileAttributeID.imProfileFrozen, true);
+        }
+
+        public void UnDeclareAsRecord()
+        {
+            ((iml.IManDocument2)Me).Undeclare();
+        }
 
         public void AddRelatedDocument(iManDocument document, string comment = "")
         {
@@ -260,8 +292,8 @@ namespace iManageWrapper
         }
 
         /// <summary>
-        ///     If run from the same machine as CheckOut(), uploads the checked out local copy of the document and removes the
-        ///     checked out status.
+        ///     If run with no parameters from the same machine as CheckOut(), uploads the checked out local copy of the document and removes the
+        ///     checked out status. Or specify a filename.
         /// </summary>
         public void CheckIn(string filename = null)
         {
@@ -292,9 +324,37 @@ namespace iManageWrapper
             Me.GetCopy(filename, convertToHtml ? iml.imGetCopyOptions.imHTMLFormat : iml.imGetCopyOptions.imNativeFormat);
         }
 
-        public override string ToString()
+        public DateTime AccessTime { get { return Me.AccessTime; } }
+
+        public iManDocument LatestVersion { get { return new iManDocument(Me.LatestVersion, Database); } }
+
+        public IEnumerable<iManContent> Versions
         {
-            return string.Format(Me.ObjectID);
+            get
+            {
+                foreach (iml.IManContent content in Me.Versions)
+                {
+                    yield return new iManContent(content, Database);
+                }
+            }
         }
+
+        public IEnumerable<iManAdditionalProperty> AdditionalProperties
+        {
+            get
+            {
+                foreach (iml.IManAdditionalProperty additionalProperty in Me.AdditionalProperties)
+                {
+                    yield return new iManAdditionalProperty(additionalProperty, Database);
+                }
+            }
+        }
+
+        public void Delete()
+        {
+            Database.DeleteDocument(this);
+        }
+
     }
+
 }

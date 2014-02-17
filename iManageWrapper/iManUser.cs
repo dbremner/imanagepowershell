@@ -11,7 +11,7 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
-    // ReSharper disable once InconsistentNaming
+    
     public class iManUser : iManObjectDatabase
     {
         internal new iml.IManUser Me { get { return (iml.IManUser)base.Me; } }
@@ -38,7 +38,7 @@ namespace iManageWrapper
         public string Location { get { return Me.Location; } }
         public bool LoginEnabled { get { return Me.LoginEnabled; } }
         public string Mobile { get { return Me.Mobile; } }
-        public string Name { get { return Me.Name; } }
+        public new string Name { get { return Me.Name; } }
         public string Other { get { return Me.Other; } }
         public string Pager { get { return Me.Pager; } }
         public bool PasswordExpires { get { return Me.PasswordExpires; } }

@@ -11,7 +11,6 @@ using iManageWrapper;
 namespace iManagePowerShell
 {
     [Cmdlet(VerbsCommon.Get, "iManDocument")]
-// ReSharper disable once InconsistentNaming
     public class Get_iManDocument : PSCmdlet
     {
 
@@ -180,7 +179,6 @@ namespace iManagePowerShell
     }
 
     [Cmdlet(VerbsData.Export, "iManDocument")]
-// ReSharper disable once InconsistentNaming
     public class Export_iManDocument : PSCmdlet
     {
 
@@ -196,13 +194,27 @@ namespace iManagePowerShell
             foreach (var d in Document)
             {
                 var filename = string.Format("{0}_{1}.{2}", d.Number, d.Version, d.Extension);
-                if (DestinationPath == null)
-                    d.GetCopy(Path.Combine(SessionState.Path.CurrentFileSystemLocation.Path, filename));
-                else
-                    d.GetCopy(Path.Combine(Path.GetFullPath(DestinationPath), filename));
+                var path = DestinationPath == null
+                    ? Path.Combine(SessionState.Path.CurrentFileSystemLocation.Path, filename)
+                    : Path.Combine(Path.GetFullPath(DestinationPath), filename);
+                d.GetCopy(path);
             }
         }
 
     }
 
+    [Cmdlet(VerbsCommon.Remove, "iManDocument")]
+    public class Remove_iManDocument : PSCmdlet
+    {
+        [Parameter(ValueFromPipeline = true, Mandatory = true)]
+        public iManDocument[] Document { get; set; }
+
+        protected override void ProcessRecord()
+        {
+            foreach (iManDocument document in Document)
+            {
+                document.Delete();
+            }
+        }
+    }
 }

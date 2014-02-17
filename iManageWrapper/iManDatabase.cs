@@ -6,7 +6,7 @@ using iml = IManage;
 
 namespace iManageWrapper
 {
-    // ReSharper disable once InconsistentNaming
+    
     public class iManDatabase : iManObject
     {
         private SqlConnection _sqlServer;
@@ -52,7 +52,7 @@ namespace iManageWrapper
             }
         }
 
-        public string Name
+        public new string Name
         {
             get { return Me.Name; }
         }
@@ -168,9 +168,32 @@ namespace iManageWrapper
             
         }
 
+        public iManUser CurrentUser
+        {get{ return new iManUser(Me.GetUser(Me.Session.UserID), this);}}
+
         public iManDocument GetDocument(int documentNumber, int documentVersion)
         {
             return new iManDocument(Me.GetDocument(documentNumber, documentVersion), this);
+        }
+
+        public iManDocument CreateDocument()
+        {
+            return new iManDocument(Me.CreateDocument(), this);
+        }
+
+        public iManDocumentType GetDocumentTypeFromPath(string documentPath)
+        {
+            return new iManDocumentType(Me.GetDocumentTypeFromPath(documentPath), this);
+        }
+
+        public iManFolder GetFolder(int folderID)
+        {
+            return new iManFolder(Me.GetFolder(folderID), this);
+        }
+
+        public iManUser GetUser(string userName)
+        {
+            return new iManUser(Me.GetUser(userName), this);
         }
 
         public IEnumerable<iManUser> SearchUsersByUsername(string username)
@@ -229,12 +252,62 @@ namespace iManageWrapper
 
         public override string ToString()
         {
-            return Name;
+            return Me.HasObjectID ? Me.ObjectID : Name;
         }
 
-        public override int GetHashCode()
+        public IEnumerable<iManContent> Worklist()
         {
-            return ToString().GetHashCode();
+            foreach (iManContent content in Me.Worklist)
+                yield return content;
+        }
+
+        public IEnumerable<iManWorkspace> Workspaces()
+        {
+            foreach (iManWorkspace workspace in Me.Workspaces)
+                yield return workspace;
+        }
+
+        public IEnumerable<iManContent> CheckedOutList()
+        {
+            foreach (iManContent content in Me.CheckedOutList)
+            {
+                yield return content;
+            }
+        }
+
+        public void DeleteDocument(int number, int version)
+        {
+            Me.DeleteDocument(number, version);
+        }
+
+        public void DeleteDocument(iManDocument d)
+        {
+            DeleteDocument(d.Number, d.Version);
+        }
+
+        public string Description { get { return Me.Description; } }
+
+        public iManSession Session { get { return new iManSession(Me.Session); }}
+
+        public IEnumerable<iManFolder> SubscriptionFolders()
+        {
+            foreach (iml.IManFolder subscriptionFolder in Me.SubscriptionFolders)
+            {
+                yield return new iManFolder(subscriptionFolder, this);
+            }
+        }
+
+        public IEnumerable<iManFolder> FavoritesFolders()
+        {
+            foreach (iml.IManFolder favoriteFolder in Me.FavoritesFolders)
+            {
+                yield return new iManFolder(favoriteFolder, this);
+            }
+        }
+
+        public iManFolder Root()
+        {
+            return new iManFolder(Me.Root, this);
         }
     }
 }

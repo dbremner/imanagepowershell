@@ -10,7 +10,7 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
-// ReSharper disable once InconsistentNaming
+
     public class iManSession : iManObject, IDisposable
     {
         internal new iml.IManSession Me { get { return (iml.IManSession)base.Me; } }
@@ -38,6 +38,14 @@ namespace iManageWrapper
             get
             {
                 return Me.ServerName;
+            }
+        }
+
+        public string UserID
+        {
+            get
+            {
+                return Me.UserID;
             }
         }
     }

@@ -39,20 +39,29 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Enumerations.cs" />
     <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="iManAdditionalProperty.cs" />
     <Compile Include="iManContent.cs" />
     <Compile Include="iManCustomAttribute.cs" />
     <Compile Include="iManDatabase.cs" />
     <Compile Include="iManDocument.cs" />
     <Compile Include="iManDocumentClass.cs" />
+    <Compile Include="iManDocumentFolder.cs" />
     <Compile Include="iManDocumentHistory.cs" />
+    <Compile Include="iManDocumentType.cs" />
     <Compile Include="iManFolder.cs" />
+    <Compile Include="iManGroup.cs" />
+    <Compile Include="iManGroupACL.cs" />
+    <Compile Include="iManLocation.cs" />
     <Compile Include="iManObject.cs" />
     <Compile Include="iManProfile.cs" />
     <Compile Include="iManProfiledContent.cs" />
+    <Compile Include="iManProfiledFolder.cs" />
     <Compile Include="iManSecurity.cs" />
     <Compile Include="iManServer.cs" />
     <Compile Include="iManSession.cs" />
+    <Compile Include="iManUserACL.cs" />
     <Compile Include="iManWorkspace.cs" />
     <Compile Include="iManUser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -10,7 +10,7 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
-// ReSharper disable once InconsistentNaming
+
     public class iManDocumentHistory : iManObjectDatabase
     {
         internal new iml.IManDocumentHistory Me { get { return (iml.IManDocumentHistory)base.Me; } }

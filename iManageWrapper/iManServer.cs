@@ -11,7 +11,7 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
-// ReSharper disable once InconsistentNaming
+
     public class iManServer : iManObject, IDisposable
     {
         internal new iml.IManDMS Me { get { return (iml.IManDMS)base.Me; } }

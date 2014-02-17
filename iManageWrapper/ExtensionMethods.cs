@@ -20,7 +20,15 @@ namespace iManageWrapper
             return sb.ToString();
         }
 
-
+        public static string CapitalizeFirstLetter(this string str)
+        {
+            if (str == null) return str;
+            if (str.Length > 1)
+                str = char.ToUpper(str[0]) + str.Substring(1);
+            else
+                str = str.ToUpper();
+            return str;
+        }
     }
 
 }

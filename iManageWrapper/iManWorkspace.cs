@@ -11,8 +11,7 @@ using iml = IManage;
 namespace iManageWrapper
 {
 
-// ReSharper disable once InconsistentNaming
-    public class iManWorkspace : iManObjectDatabase
+    public class iManWorkspace : iManProfiledFolder
     {
         internal new iml.IManWorkspace Me { get { return (iml.IManWorkspace)base.Me; } }
 
@@ -20,56 +19,54 @@ namespace iManageWrapper
         {
         }
 
-        static public implicit operator iManFolder(iManWorkspace w)
+        public iManDocumentClass Class { get { return new iManDocumentClass(Me.Class, Database);}}
+        public IEnumerable<iManObject> ConnectorFolders { get { throw new NotImplementedException(); } }
+        public DateTime CreationDate { get { return Me.CreationDate; } }
+        public IEnumerable<iManObject> CustomProperties { get { throw new NotImplementedException(); } }
+        public DateTime DateModified { get { return Me.DateModified; } }
+        public IEnumerable<iManDocumentFolder> DocumentFolders { get { foreach (iml.IManDocumentFolder f in Me.DocumentFolders) yield return new iManDocumentFolder(f, Database); } }
+        public IEnumerable<iManObject> EventFoldesr { get { throw new NotImplementedException(); } }
+        public IEnumerable<iManDocumentHistory> HistoryList { get { foreach (iml.IManDocumentHistory h in Me.HistoryList) yield return  new iManDocumentHistory(h, Database); } }
+        public iManUser InUseBy { get { return new iManUser(Me.InUseBy, Database); } }
+        public iManUser LastUser { get { return new iManUser(Me.LastUser, Database); } }
+        public IEnumerable<iManObject> LinkListFolders { get { throw new NotImplementedException(); } }
+        public IEnumerable<iManObject> MessageFolders { get { throw new NotImplementedException(); } }
+        public IEnumerable<iManObject> NoteFolders { get { throw new NotImplementedException(); } }
+        public int Size { get { return Me.Size; } }
+        public iManDocumentClass SubClass { get { return new iManDocumentClass(Me.SubClass, Database); } }
+        public string SubType { get { return Me.SubType; } }
+        public IEnumerable<iManObject> Tabs { get { throw new NotImplementedException(); ; } }
+        public IEnumerable<iManObject> TaskFolders { get { throw new NotImplementedException(); ; } }
+        public iManDocumentType Type { get { return new iManDocumentType(Me.Type, Database); } }
+        public int WorkspaceID { get { return Me.WorkspaceID; } }
+
+        public void AddToRecentWorkspaces()
         {
-            return new iManFolder(w.Me, w.Database);
+            Me.AddToRecentWorkspaces();
         }
 
-        public IEnumerable<iManFolder> SubFolders
+        public imProfileAttributeID GetAttributeByID(imProfileAttributeID attribute)
         {
-            get
-            {
-                foreach (iml.IManFolder f in Me.SubFolders)
-                    yield return new iManFolder(f, Database);
-            }
+            return (imProfileAttributeID)Me.GetAttributeByID((iml.imProfileAttributeID)attribute);
         }
 
-        public void Refile()
+        public object GetAttributeValueByID(imProfileAttributeID attribute)
         {
-            foreach (var f in SubFolders)
-                f.Refile();
+            object result = Me.GetAttributeValueByID((iml.imProfileAttributeID) attribute);
+            return result;
         }
 
-        public string Name { get { return Me.Name; } set { Me.Name = value; } }
+        public void GetCopy(string path) { Me.GetCopy(path); }
 
-        public string Description { get { return Me.Description; } set { Me.Description = value; } }
-
-        public void Update() { Me.Update(); }
-
-        public iManFolder AddNewDocumentFolderInheriting(string name, string description)
+        public bool IsWorkspaceOperationAllowed(imWorkspaceOperation operation)
         {
-            return new iManFolder(((iml.IManDocumentFolders)Me.SubFolders).AddNewDocumentFolderInheriting(name, description), Database);
+            return Me.IsWorkspaceOperationAllowed((iml.imWorkspaceOperation) operation);
         }
 
-        public IEnumerable<iManDocument> SearchDocuments(string name, string number, string version, string author, string createdBy, string client, string matter, string fulltext)
+        public void UpdateAll(string file, ref object errors)
         {
-            var psp = Database.Me.Session.DMS.CreateProfileSearchParameters();
-            if (name != null) { psp.Add(iml.imProfileAttributeID.imProfileName, name); }
-            if (number != null) { psp.Add(iml.imProfileAttributeID.imProfileDocNum, number); }
-            if (version != null) { psp.Add(iml.imProfileAttributeID.imProfileVersion, version); }
-            if (author != null) { psp.Add(iml.imProfileAttributeID.imProfileAuthor, author); }
-            if (createdBy != null) { psp.Add(iml.imProfileAttributeID.imProfileOperator, createdBy); }
-            if (client != null) { psp.Add(Database.ClientCustomField, client); }
-            if (matter != null) { psp.Add(Database.MatterCustomField, matter); }
-            if (fulltext != null) { psp.AddFullTextSearch(fulltext, iml.imFullTextSearchLocation.imFullTextAnywhere); }
-
-            // this line is the only difference between FromWorkspace and FromDatabase
-            psp.Add(iml.imProfileAttributeID.imProfileContainerID, Me.FolderID.ToString(CultureInfo.InvariantCulture));
-
-            foreach (iml.IManDocument d in Me.Database.SearchDocuments(psp, true))
-                yield return new iManDocument(d, Database);
+            Me.UpdateAll(file, ref errors);
         }
-
     }
 
 }

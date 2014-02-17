@@ -30,9 +30,16 @@ namespace iManageWrapper
         {
             get
             {
-                foreach (iml.IManAttachment a in Me.Attachments)
+                if (Me.HasAttachments)
                 {
-                    yield return a;
+                    foreach (iml.IManAttachment a in Me.Attachments)
+                    {
+                        yield return a;
+                    }
+                }
+                else
+                {
+                    yield break;
                 }
             }
         }
@@ -69,18 +76,19 @@ namespace iManageWrapper
             get { return new iManProfile(Me.Profile, Database); }
         }
 
-        //public iManRules Rules { get { return null; }} // not implemented
+        //public iManRules Rules { get { throw new NotImplementedException(); } } // not implemented
 
-        public iManSecurity Security { get { return new iManSecurity(Me.Security, Database); } }
+        public iManSecurity Security { get { return new iManSecurity(Me.Security, this); } }
 
         public iManDocumentClass SubClass
         {
             get { return new iManDocumentClass(Me.SubClass, Database); }
         }
 
-        public iml.IManDocumentType Type
+        public iManDocumentType Type
         {
-            get { return Me.Type; }
+            get { return new iManDocumentType(Me.Type, Database); }
+            set { Me.Type = value.Me; }
         }
 
         public bool LockContent(bool refreshProfile)

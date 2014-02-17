@@ -8,7 +8,7 @@ using iManageWrapper;
 namespace iManagePowerShell
 {
     [Cmdlet(VerbsCommon.Get, "iManServer")]
-// ReSharper disable once InconsistentNaming
+
     public class Get_iManServer : PSCmdlet
     {
 

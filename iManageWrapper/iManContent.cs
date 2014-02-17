@@ -18,5 +18,7 @@ namespace iManageWrapper
         {
             Me.Update();
         }
+
+        public new string Name { get { return ""; }}
     }
 }

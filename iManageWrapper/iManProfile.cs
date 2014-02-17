@@ -6,7 +6,7 @@ using iml = IManage;
 
 namespace iManageWrapper
 {
-// ReSharper disable once InconsistentNaming
+
     public class iManProfile : iManObjectDatabase
     {
         internal new iml.IManProfile Me { get { return (iml.IManProfile)base.Me; } }
@@ -25,7 +25,7 @@ namespace iManageWrapper
             return (T) Me.GetAttributeValueByID(attribute);
         }
 
-        public void SetAttributeByID(iml.imProfileAttributeID attribute, iManObject value)
+        public void SetAttributeByID(iml.imProfileAttributeID attribute, object value)
         {
             Me.SetAttributeByID(attribute, value);
         }

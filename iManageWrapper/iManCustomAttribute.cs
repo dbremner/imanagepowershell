@@ -7,7 +7,7 @@ using iml = IManage;
 
 namespace iManageWrapper
 {
-// ReSharper disable once InconsistentNaming
+
     public class iManCustomAttribute : iManObjectDatabase
     {
         internal new iml.IManCustomAttribute Me
@@ -22,7 +22,7 @@ namespace iManageWrapper
         public string Description { get { return Me.Description; } }
         public bool Enabled { get { return Me.Enabled; } }
         public string ID { get { return Me.ID; } }
-        public string Name { get { return Me.Name; } }
+        public new string Name { get { return Me.Name; } }
         public iManCustomAttribute Parent { get { return new iManCustomAttribute(Me.Parent, Database); } }
         public iml.imProfileAttributeID Type { get { return Me.Type; } }
 
